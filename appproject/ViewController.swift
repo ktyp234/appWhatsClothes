@@ -11,7 +11,7 @@ import KakaoOpenSDK
 import KakaoMessageTemplate
 
 class ViewController: UIViewController {
-
+    
     @IBOutlet var imageClothes: UIImageView!
     
     @IBAction func buttonKakao(_ sender: Any) {
@@ -53,13 +53,58 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         settingImage()
+        getWeather()
         // Do any additional setup after loading the view, typically from a nib.
     }
-    
+
     func settingImage(){
         imageClothes.layer.masksToBounds = true
         imageClothes.layer.cornerRadius = imageClothes.frame.width / 2
     }
+    func getWeather(){
+        let weatherURL = "https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=acfacf92c83936ab9c235b7ea1e89a4e"
+        
+        let defaultSession = URLSession(configuration: .default)
+        
+        guard let url = URL(string: weatherURL) else {
+            print("url is nil")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        
+        request.httpMethod = "GET"
+        
+        
+        
+        
+        let dataTask = defaultSession.dataTask(with: request) { (data, response, error) in
+            
+            guard error == nil else {
+                print(error)
+                return
+            }
+            
+            if let data = data, let response = response as? HTTPURLResponse {
+                print(data,"D")
+                guard let jsonArray = try? JSONSerialization.jsonObject(with: data, options: []) as! [String:Any] else {
+                    print("json to any error")
+                    return
+                }
+                let array = jsonArray["main"]! as! [String:Any]
+                
+                print(array["temp"] ?? 0)
+                var tempature = array["temp"] ?? 0
+                let tempature = tempature as? Double
+                tempature -= 273.15
+                
+            }
+            
+        }
+        
+        dataTask.resume()
+    }
 
 }
+
 
