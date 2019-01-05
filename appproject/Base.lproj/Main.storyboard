@@ -49,7 +49,9 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="centerLabel" destination="PUv-BO-6Ls" id="N6q-cs-94i"/>
                         <outlet property="imageClothes" destination="sO5-yY-GSS" id="oKC-3Y-cii"/>
+                        <outlet property="temperatureLabel" destination="Qu8-Hm-56r" id="0gk-XQ-YAe"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

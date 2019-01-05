@@ -9,8 +9,19 @@
 import UIKit
 import KakaoOpenSDK
 import KakaoMessageTemplate
+import CoreLocation
 
-class ViewController: UIViewController {
+class ViewController: UIViewController{
+
+    var locationManager : CLLocationManager!
+    var lat : Double!
+    var lot : Double!
+    var descString : String!
+    var titleString : String!
+    var imageArray: [String] = [""]
+    @IBOutlet var centerLabel: UILabel!
+    
+    @IBOutlet var temperatureLabel: UILabel!
     
     @IBOutlet var imageClothes: UIImageView!
     
@@ -18,9 +29,9 @@ class ViewController: UIViewController {
         // Location 타입 템플릿 오브젝트 생성
         let tempaler = KMTFeedTemplate { (templaterBuilder) in
             templaterBuilder.content = KMTContentObject(builderBlock: { (contentBuilder) in
-                contentBuilder.title = "18도"
-                contentBuilder.desc = "오늘의 날씨는 코트 입기 좋은 날입니다."
-                contentBuilder.imageURL = URL(string: "https://images.unsplash.com/photo-1491998664548-0063bef7856c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80")!
+                contentBuilder.title = self.titleString
+                contentBuilder.desc = self.descString
+                contentBuilder.imageURL = URL(string: "https://firebasestorage.googleapis.com/v0/b/clothes-55f79.appspot.com/o/photo-1541441181252-17e403fbbf5b.jpeg?alt=media&token=00f990cf-8ca4-47b7-9ce5-cbaced44ff48")!
                 contentBuilder.link = KMTLinkObject(builderBlock: { (linkBuilder) in
                     linkBuilder.mobileWebURL = URL(string: "https://developers.kakao.com")
                 })
@@ -53,16 +64,36 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         settingImage()
-        getWeather()
+        locationSetting()
+        
         // Do any additional setup after loading the view, typically from a nib.
     }
 
+    func locationSetting(){
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
+    }
     func settingImage(){
         imageClothes.layer.masksToBounds = true
         imageClothes.layer.cornerRadius = imageClothes.frame.width / 2
     }
+    func checkTempature(temperature:Double) -> String {
+        switch temperature {
+        case _ where temperature < 5:
+            return "오늘의 날씨는 야상, 패딩, 목도리 착용을 해야합니다."
+        case _ where temperature < 5:
+            return "오늘의 날씨는 야상, 패딩, 목도리 착용을 해야합니다."
+        default:
+            return ""
+        }
+        
+        
+    }
     func getWeather(){
-        let weatherURL = "https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=acfacf92c83936ab9c235b7ea1e89a4e"
+        let weatherURL = "https://api.openweathermap.org/data/2.5/weather?lat=\(lat!)&lon=\(lot!)&appid=acfacf92c83936ab9c235b7ea1e89a4e"
         
         let defaultSession = URLSession(configuration: .default)
         
@@ -94,10 +125,16 @@ class ViewController: UIViewController {
                 let array = jsonArray["main"]! as! [String:Any]
                 
                 print(array["temp"] ?? 0)
-                var tempature = array["temp"] ?? 0
-                let tempature = tempature as? Double
+                var tempature = array["temp"] as! Double
                 tempature -= 273.15
-                
+                print(tempature)
+                DispatchQueue.main.async {
+                    self.temperatureLabel.text = "\(Int(tempature))도"
+                    self.titleString = "\(Int(tempature))도"
+                    self.centerLabel.text = self.checkTempature(temperature: tempature)
+                    self.centerLabel.adjustsFontSizeToFitWidth = true
+                    self.descString = self.checkTempature(temperature: tempature)
+                }
             }
             
         }
@@ -108,3 +145,16 @@ class ViewController: UIViewController {
 }
 
 
+
+extension ViewController: CLLocationManagerDelegate{
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let coor = manager.location?.coordinate{
+            print("lat" + String(coor.latitude) + "lot" + String(coor.longitude))
+            lat = coor.latitude
+            print(lat)
+            lot = coor.longitude
+            getWeather()
+        }
+    }
+}
